@@ -52,36 +52,54 @@ $app->get('/', function (Request $request, Response $response) {
     ));
 });
 
-$app->post('/{path}', function(Request $request, Response $response) {
+function createURL(Request $request, Response $response) {
+    $data = $request->getParsedBody();
+    $originalUrl = $data["original"];
+    error_log("[POST] $originalUrl");
+
+    $query = new LeanQuery("Url");
+    $query->equalTo("original", $originalUrl);
+    $urls = $query->limit(1)->find();
+
+    if (empty($urls)) {
+        $url = new LeanObject("Url");
+        $url->set("original", $originalUrl);
+        $url->save();
+    } else {
+        $url = $urls[0];
+    }
+
+    $path = $url->get("short");
+    error_log("[POST] $originalUrl -> $path done");
+    return $response->withStatus(200)->withHeader("Content-Type", "application/json")->write(json_encode([
+        "short" => $path,
+    ]));
+};
+
+$app->post('/', createURL);
+$app->post('/urls', createURL); // alias
+
+$app->put('/{path}', function(Request $request, Response $response) {
     $data = $request->getParsedBody();
     $originalUrl = $data["original"];
     $path = $request->getAttribute('path');
-    $todo = new LeanObject("Url");
-    $todo->set("original", $originalUrl);
-    if (isset($path)) {
-        $todo->set("short", $path);
+    error_log("[POST] $originalUrl -> $path");
+
+    $query = new LeanQuery("Url");
+    $query->equalTo("original", $originalUrl);
+    $query->equalTo("short", $path);
+    $urls = $query->limit(1)->find();
+
+    if (empty($urls)) {
+        return $response->withStatus(409)->withHeader("Content-Type", "application/json")->write(json_encode([
+            "message" => "url $path already exists"
+        ]));
+    } else {
+        $url = $urls[0];
     }
-    try {
-        error_log("[POST] $originalUrl -> $path");
-        $todo->save();
-    } catch (\Exception $ex) {
-        if ($ex->getCode() == 137) {
-            error_log("[POST] url $path already exists, fetching it.");
-            $query = new LeanQuery("Url");
-            $query->equalTo("original", $originalUrl);
-            $query->equalTo("short", $path);
-            $urls = $query->find();
-            if (empty($urls)) {
-                return $response->withStatus(409)->withHeader("Content-Type", "application/json")->write(json_encode([
-                    "message" => "url $path already exists"
-                ]));
-            }
-        } else {
-            throw $ex;
-        }  
-    }
-    $path = $urls[0]->get("short");
-    error_log("[POST] $originalUrl -> $path done");
+
+    $path = $url->get("short");
+    error_log("[PUT] $originalUrl -> $path done");
     return $response->withStatus(200)->withHeader("Content-Type", "application/json")->write(json_encode([
         "short" => $path,
     ]));

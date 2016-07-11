@@ -52,6 +52,10 @@ $app->get('/', function (Request $request, Response $response) {
     ));
 });
 
+function getRandomId() {
+    return substr(preg_replace('/[^0-9a-zA-Z]/', '', base64_encode(random_bytes(12))), 0, 7);
+};
+
 function createURL(Request $request, Response $response) {
     $data = $request->getParsedBody();
     $originalUrl = $data["original"];
@@ -64,6 +68,7 @@ function createURL(Request $request, Response $response) {
     if (empty($urls)) {
         $url = new LeanObject("Url");
         $url->set("original", $originalUrl);
+        $url->set("short", getRandomId());
         $url->save();
     } else {
         $url = $urls[0];

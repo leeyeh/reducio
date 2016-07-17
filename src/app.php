@@ -91,16 +91,21 @@ $app->put('/{path}', function(Request $request, Response $response) {
     error_log("[POST] $originalUrl -> $path");
 
     $query = new LeanQuery("Url");
-    $query->equalTo("original", $originalUrl);
     $query->equalTo("short", $path);
-    $urls = $query->limit(1)->find();
+    $urls = $query->find();
 
     if (empty($urls)) {
-        return $response->withStatus(409)->withHeader("Content-Type", "application/json")->write(json_encode([
-            "message" => "url $path already exists"
-        ]));
+        $url = new LeanObject("Url");
+        $url->set("original", $originalUrl);
+        $url->set("short", $path);
+        $url->save();
     } else {
         $url = $urls[0];
+        if ($url->get('original') !== $originalUrl) {
+            return $response->withStatus(409)->withHeader("Content-Type", "application/json")->write(json_encode([
+                "message" => "url $path already exists"
+            ]));
+        }
     }
 
     $path = $url->get("short");

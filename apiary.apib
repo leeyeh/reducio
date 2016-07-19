@@ -1,0 +1,48 @@
+FORMAT: 1A
+HOST: https://url.leanapp.cn/
+
+# Reducio
+
+[Reducio](https://github.com/leeyeh/reducio) is a URL shortening service designed to be deployed on [LeanEngine](https://leancloud.cn/docs/leanengine_overview.html).
+
+[![](https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png)](https://chrome.google.com/webstore/detail/jclafgekedbnphekfjeoalmlkiohikac)
+
+## {HOST}/ [/]
+
+### Create a shortened URL [POST]
+
+Currently, there is an issue with POST `/` endpoint.
+
+`/urls` is provided as an alias.
+
++ Request (application/json)
+
+        {
+            "original": "https://leancloud.cn"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "short": "gaWegTm"
+        }
+
+## {HOST}/short_path [/{short_path}]
+
+### Customize a shortened URL [PUT]
+
++ Parameters
+    + short_path (string) - [0-9a-zA-z]+
+
+
++ Request (application/json)
+
+        {
+            "original": "https://leancloud.cn"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "short": "LC"
+        }

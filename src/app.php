@@ -56,7 +56,7 @@ function getRandomId() {
     return substr(preg_replace('/[^0-9a-zA-Z]/', '', base64_encode(random_bytes(12))), 0, 7);
 };
 
-function createURL(Request $request, Response $response) {
+$createURL = function (Request $request, Response $response) {
     $data = $request->getParsedBody();
     $originalUrl = $data["original"];
     error_log("[POST] $originalUrl");
@@ -81,8 +81,8 @@ function createURL(Request $request, Response $response) {
     ]));
 };
 
-$app->post('/', createURL);
-$app->post('/urls', createURL); // alias
+$app->post('/', $createURL);
+$app->post('/urls', $createURL); // alias
 
 $app->put('/{path}', function(Request $request, Response $response) {
     $data = $request->getParsedBody();
@@ -117,19 +117,18 @@ $app->put('/{path}', function(Request $request, Response $response) {
 
 $app->get('/{path}', function (Request $request, Response $response) {
     $path = $request->getAttribute('path');
-    error_log("[GET] $path");    
+    error_log("[GET] $path");
     $query = new LeanQuery("Url");
     $query->equalTo("short", $path);
     $urls = $query->find();
     if (empty($urls)) {
-        error_log("[GET] $path not found");    
+        error_log("[GET] $path not found");
         return $response->withStatus(404)->write("Not Found");
     } else {
         $originalUrl = $urls[0]->get('original');
-        error_log("[GET] $path -> $originalUrl");    
+        error_log("[GET] $path -> $originalUrl");
         return $response->withStatus(302)->withHeader("Location", $originalUrl);
     }
 });
 
 $app->run();
-

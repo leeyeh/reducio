@@ -42,14 +42,13 @@ $app->add(new \Tuupola\Middleware\Cors([
 ]));
 
 // 使用 Slim/PHP-View 作为模版引擎
-$container = $app->getContainer();
-$container["view"] = function($container) {
-    return new \Slim\Views\PhpRenderer(__DIR__ . "/views/");
-};
+// $container = $app->getContainer();
+// $container["view"] = function($container) {
+//     return new \Slim\Views\PhpRenderer(__DIR__ . "/views/");
+// };
 
 $app->get('/', function (Request $request, Response $response) {
-    return $this->view->render($response, "index.phtml", array(
-    ));
+  return $response->withStatus(302)->withHeader("Location", "http://docs.reducio.apiary.io/");
 });
 
 function getRandomId() {

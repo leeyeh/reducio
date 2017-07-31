@@ -126,6 +126,15 @@ $app->get('/{path}', function (Request $request, Response $response) {
     } else {
         $originalUrl = $urls[0]->get('original');
         error_log("[GET] $path -> $originalUrl");
+        try {
+            $log = new LeanObject('Redirection');
+            $log->set('short', $path);
+            $log->set('ua', $_SERVER['HTTP_USER_AGENT']);
+            $log->set('ip', $_SERVER['HTTP_X_REAL_IP']);
+            $log->save();
+        } catch (Exception $error) {
+            error_log($error);
+        }
         return $response->withStatus(302)->withHeader("Location", $originalUrl);
     }
 });
